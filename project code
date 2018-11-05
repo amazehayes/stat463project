@@ -1,0 +1,27 @@
+devtools::install_github("SMAC-Group/simts")
+
+library(simts)
+library(pageviews)
+library(astsa)
+
+
+wikiMobile = project_pageviews(granularity = "daily", start = "2017090123", end = "2018102123", platform = "mobile-app")
+wikiDesktop = project_pageviews(granularity = "daily", start = "2017090123", end = "2018102123", platform = "desktop")
+ArticleSilvio = article_pageviews(article = "Silvio_Berlusconi", start = "2017090123", end = "2018102123")
+ArticleBeyonce = article_pageviews(article = "Beyonce", start = "2017090123", end = "2018102123")
+ArticleChomsky = article_pageviews(article = "Noam_Chomsky", start = "2017090123", end = "2018102123")
+ArticleLazio = article_pageviews(article = "SS_Lazio", start = "2017090123", end = "2018102123")
+ArticleThanksgiving = article_pageviews(article = "Thanksgiving", start = "2017090123", end = "2018102123")
+
+wikiMobileViews = gts(wikiMobile$views)
+wikiDesktopViews = gts(wikiDesktop$views)
+ArticleSilvioViews = gts(ArticleSilvio$views)
+ArticleBeyonceViews = gts(ArticleBeyonce$views)
+ArticleChomskyViews = gts(ArticleChomsky$views)
+ArticleLazioViews = gts(ArticleLazio$views)
+ArticleThanksgivingViews = gts(ArticleThanksgiving$views)
+
+plot(wikiMobileViews)
+mod = estimate(AR(1), wikiMobileViews)
+check(mod)
+predict(mod, n.ahead = 1)
