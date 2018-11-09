@@ -5,16 +5,21 @@ library(astsa)
 library(gmailr)
 library(forecast463)
 
+day <- Sys.Date()
+day <- gsub("-","",day)
+day <- paste0(day,"12") ## todays date
+day2 <- as.character(as.numeric(day) - 0002000000) ## two years ago from today
+
 use_secret_file('stat463.json')
 
 #Collect Data from pageviews
-wikiMobile = project_pageviews(granularity = "daily", start = "2018050612", end = "2018110611", platform = "mobile-app")
-wikiDesktop = project_pageviews(granularity = "daily", start = "2018050612", end = "2018110611", platform = "desktop")
-ArticleSilvio = article_pageviews(article = "Silvio_Berlusconi", start = "2018050612", end = "2018110611")
-ArticleBeyonce = article_pageviews(article = "Beyonce", start = "2018050612", end = "2018110611")
-ArticleChomsky = article_pageviews(article = "Noam_Chomsky", start = "2018050612", end = "2018110611")
-ArticleLazio = article_pageviews(article = "SS_Lazio", start = "2018050612", end = "2018110611")
-ArticleThanksgiving = article_pageviews(article = "Thanksgiving", start = "2018050612", end = "2018110611")
+wikiMobile = project_pageviews(granularity = "daily", start = day2, end = day, platform = "mobile-app")
+wikiDesktop = project_pageviews(granularity = "daily", start = day2, end = day, platform = "desktop")
+ArticleSilvio = article_pageviews(article = "Silvio_Berlusconi", start = day2, end = day)
+ArticleBeyonce = article_pageviews(article = "Beyonce", start = day2, end = day)
+ArticleChomsky = article_pageviews(article = "Noam_Chomsky", start = day2, end = day)
+ArticleLazio = article_pageviews(article = "SS_Lazio", start = day2, end = day)
+ArticleThanksgiving = article_pageviews(article = "Thanksgiving", start = day2, end = day)
 
 #Set variable with pageviews
 wikiMobileViews = gts(wikiMobile$views)
@@ -45,19 +50,37 @@ desktop_ci = as.numeric(desktop_prediction$CI0.95)
 desktop_forecasts = list(desktop_pred = desktop_pred, desktop_ci = desktop_ci)
 
 #Silvio Model
-mod2 = estimate(AR(1), ArticleSilvioViews)
-silvio_prediction = predict(mod2, n.ahead = 1)
+# AR MODEL
+plot(ArticleSilvioViews)
+### test for stationarity
+Box.test(ArticleSilvioViews,lag = 20,type = "Ljung-Box")
+adf.test(ArticleSilvioViews,alternative = "stationary")
+kpss.test(ArticleSilvioViews)
+### All three tests show stationarity
 
-silvio_pred = as.numeric(silvio_prediction$pred) 
-silvio_ci = as.numeric(silvio_prediction$CI0.95) 
+pacf(ArticleSilvioViews, lag.max=20)
+best_Silvio <- select(AR(20),ArticleSilvioViews,include.mean = FALSE)
+mod2 = estimate(AR(length(best_Silvio$coef)), ArticleSilvioViews)
+check(mod2)
+x <- predict(mod2, n.ahead = 1)
+
+silvio_pred = as.numeric(x$pred) 
+silvio_ci = as.numeric(x$CI0.95) 
 silvio_forecasts = list(silvio_pred = silvio_pred, silvio_ci = silvio_ci)
 
 #Beyonce Model
-mod3 = estimate(AR(1), ArticleBeyonceViews)
-beyonce_prediction = predict(mod3, n.ahead = 1)
+# AR MODELS
+plot(ArticleBeyonceViews)
+Box.test(ArticleBeyonceViews,lag = 20,type = "Ljung-Box")
+adf.test(ArticleBeyonceViews,alternative = "stationary")
+kpss.test(ArticleBeyonceViews)
+best_Beyonce <- select(AR(20),ArticleBeyonceViews,include.mean = FALSE)
+mod3 = estimate(AR(length(best_Beyonce$coef)), ArticleBeyonceViews)
+check(mod3)
+y <- predict(mod3, n.ahead = 1)
 
-beyonce_pred = as.numeric(beyonce_prediction$pred)
-beyonce_ci = as.numeric(beyonce_prediction$CI0.95)
+beyonce_pred = as.numeric(y$pred)
+beyonce_ci = as.numeric(y$CI0.95)
 beyonce_forecasts = list(beyonce_pred = beyonce_pred, beyonce_ci = beyonce_ci)
 
 #Chomsky Model
