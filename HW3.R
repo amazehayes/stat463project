@@ -233,21 +233,14 @@ check(modelg)
 
 pointFor = vector()
 
-B = 5000
-mat = matrix(0,B,30)
-mat[,1] = rep(Xt[199], B)
-mat[,2] = rep(Xt[200], B)
-for (i in 3:30){
-  for (j in 1:B){
-    mat[j,i] = (-0.2982325)*mat[j,(i-1)]
-  }
-  pointFor[i-2] = mean(mat[,i])
-}
-pointFor
+pred = predict(modelg, n.ahead = 28)
+predpredCon = pred$CI0.95
 
-for(i in 1:length(pointFor)){
-  median(abs(pointFor[i] - ))
-}
+median(abs(pred$pred - cheese$views))
+
+emp = pred$CI0.95[,2] & pred$CI0.95[,1]
+emp
+sum(emp)/length(emp)
 
 
 
