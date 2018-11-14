@@ -114,7 +114,26 @@ for(i in 1:8){
 colnames(CI2) <- c("CI.95.Low","CI.95.High")
 CI2
     #b
- 
+B = 500
+mat = matrix(NA,B,2)
+model = AR(phi = mod1$mod$coef[1:8], sigma2 = fit$mod$sigma2)
+
+for(i in seq_len(B)){
+  set.seed(B+i)
+  mat[i,] = tryCatch(estimate(AR(8), ukcars, demean = FALSE)$mod$coef,
+           error = function(e) NA)
+}
+
+mod = estimate(AR(8), ukcars)
+mod
+
+B = 500
+mat = matrix(0,B,8)
+for (i in 1:B){
+  for (j in 3:52){
+    mat[i,j] = 0.75*mat[i,(j-1)] + 0.2*mat[i,(j-2)] + rnorm(1)
+  }
+}
 
 
 #5
@@ -132,7 +151,6 @@ for (i in 1:B){
     mat[i,j] = 0.75*mat[i,(j-1)] + 0.2*mat[i,(j-2)] + rnorm(1)
   }
 }
-mat
 
   #2
 set.seed(2)
@@ -210,6 +228,27 @@ robacf(diff_ch)
 modelmle <- estimate(AR(1), diff_ch, method="mle")
 check(modelmle)
 modelg= estimate(AR(1), diff_ch, method="gmwm")
+modelg
 check(modelg)
+
+pointFor = vector()
+
+B = 5000
+mat = matrix(0,B,30)
+mat[,1] = rep(Xt[199], B)
+mat[,2] = rep(Xt[200], B)
+for (i in 3:30){
+  for (j in 1:B){
+    mat[j,i] = (-0.2982325)*mat[j,(i-1)]
+  }
+  pointFor[i-2] = mean(mat[,i])
+}
+pointFor
+
+for(i in 1:length(pointFor)){
+  median(abs(pointFor[i] - ))
+}
+
+
 
 
